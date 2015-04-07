@@ -6,6 +6,7 @@
 class Xorshift
 {
     var $w, $x, $y, $z;
+    var $mask = 0x7FFFFFFF;
 
     /**
      * Xorshift128アルゴリズムの擬似乱数ジェネレータを初期化
@@ -27,7 +28,8 @@ class Xorshift
         $this->x = $this->y;
         $this->y = $this->z;
         $this->z = $this->w;
-        return ($this->w = ($this->w ^ ($this->w >> 19)) ^ ($t ^ ($t >> 8)));
+        $this->w = ($this->w ^ ($this->w >> 19)) ^ ($t ^ ($t >> 8));
+        return ($this->w & $this->mask);
     }
 
     /**
