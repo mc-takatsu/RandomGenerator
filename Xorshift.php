@@ -5,8 +5,8 @@
  */
 class Xorshift
 {
-    var $w, $x, $y, $z;
-    var $mask = 0x7FFFFFFF;
+    var $s = array(123456789, 362436069, 521288629, 88675123);
+    const MASK31 = 0x7FFFFFFF;
 
     /**
      * Xorshift128アルゴリズムの擬似乱数ジェネレータを初期化
@@ -15,27 +15,34 @@ class Xorshift
      */
     public function __construct($seed)
     {
-        $this->x = $seed;
-        $this->y = 362436069;
-        $this->z = 521288629;
-        $this->w = 88675123;
+        if ($seed != 0) {
+            $this->init($seed);
+        }
+    }
+
+    private function init($seed)
+    {
+        for ($i = 0; $i < 4; $i++)
+        {
+            $this->s[$i] = $seed = 1812433253 * ($seed ^ ($seed >> 30)) + $i;
+        }
     }
 
     public function next()
     {
-        $t = ($this->x ^ ($this->x << 11));
+        $t = ($this->s[0] ^ ($this->s[0] << 11));
 
-        $this->x = $this->y;
-        $this->y = $this->z;
-        $this->z = $this->w;
-        $this->w = ($this->w ^ ($this->w >> 19)) ^ ($t ^ ($t >> 8));
-        return ($this->w & $this->mask);
+        $this->s[0] = $this->s[1];
+        $this->s[1] = $this->s[2];
+        $this->s[2] = $this->s[3];
+        $this->s[3] = ($this->s[3] ^ ($this->s[3] >> 19)) ^ ($t ^ ($t >> 8));
+        return ($this->s[3] & self::MASK31);
     }
 
     /**
      * @param $min
      * @param $max
-     * @return int min <= n < max の範囲の乱数を返す
+     * @return int min <= n < max の範囲の乱数を返す. 0,100を指定すると0から99の100種の値を返す
      */
     public function nextRange($min, $max)
     {
